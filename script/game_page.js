@@ -95,12 +95,9 @@ window.addEventListener("keydown", function (e) {
 // Game logic - Run till audio ends.
 function startGameLoop() {
   console.log("Game loop started");
-  gameState.noteEvents = generateNoteEvents(gameState.bpm, gameState.difficulty, 30); // fixed for testing
-  console.log("Generated", gameState.noteEvents.length, "notes");
-  console.log(gameState.noteEvents.slice(0, 10)); // first 10 notes
   gameState.noteEvents = generateNoteEvents(gameState.bpm, gameState.difficulty, audio.duration); //dynamic
   console.log("Generated", gameState.noteEvents.length, "notes");
-  console.log(gameState.noteEvents.slice(0, 10)); // first 10 notes
+  console.log(gameState.noteEvents); // first 10 notes
 }
 
 // Note Generation Algorithm/Event
@@ -135,6 +132,7 @@ function generateNoteEvents(bpm, difficulty, duration) {
 
   let notes = [];
   for (let t = 0; t < duration; t += step) {
+    t = Math.round(t * 100) / 100;
     if (Math.random() < spawnChance) {
       let lane = Math.floor(Math.random() * maxLane);
       notes.push({ time: t, lane: lane });
