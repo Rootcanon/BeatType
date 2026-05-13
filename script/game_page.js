@@ -26,7 +26,7 @@ const beatmaps = [
   },
 ];
 // difficultyBPM maps star rating (1-5) to beats per minute
-const difficultyBPM = { 1: 70, 2: 100, 3: 130, 4: 160, 5: 190 };
+const difficultyBPM = { 1: 60, 2: 80, 3: 100, 4: 120, 5: 140 };
 
 // Game State with defult values
 let gameState = {
@@ -35,8 +35,9 @@ let gameState = {
   activeNotes: [],
   noteEvents: [],
   startTimer: null,
-  bpm: 130,
-  difficulty: 3
+  bpm: 120,
+  difficulty: 3,
+  maxLanes: 7
 };
 
 // song ID and star rating from URL
@@ -57,13 +58,13 @@ function getBeatmapData(id) {
 
 // Convert star rating to BPM, with fallback
 function getBPM(star) {
-  return difficultyBPM[star] ?? 130;
+  return difficultyBPM[star] ?? 100;
 };
 
 // Get beatmap's filepath ID
 let params = parseURLParams();
 let song = getBeatmapData(params.id);
-if (!song) { song = beatmaps[0]; }
+if (!song) song = beatmaps[0];
 
 const audio = document.getElementById("game-audio");
 
@@ -95,9 +96,41 @@ window.addEventListener("keydown", function (e) {
 // Game logic - Run till audio ends.
 function startGameLoop() {
   console.log("Game loop started");
-  gameState.noteEvents = generateNoteEvents(gameState.bpm, gameState.difficulty, audio.duration); //dynamic
-  console.log("Generated", gameState.noteEvents.length, "notes");
-  console.log(gameState.noteEvents); // first 10 notes
+
+  gameState.noteEvents = generateNoteEvents(gameState.bpm, gameState.difficulty, audio.duration);
+
+  let fallDuration = getFallDuration(gameState.difficulty);
+  let spawnIndex = 0;
+
+  // Hides unusedLanes
+  let maxLane = gameState.maxLanes;
+  for (let i = maxLane; i <= 8; i += 1) {
+    let laneEl = document.getElementById("lane_" + i);
+    laneEl.style.display = "none";
+  }
+
+  function loop() {
+    if (!gameState.isPlaying) return;
+
+    let currentTime = audio.currentTime;
+
+    while (spawnIndex < gameState.noteEvents.length &&
+      gameState.noteEvents[spawnIndex].time <= currentTime + fallDuration) {
+      let noteData = gameState.noteEvents[spawnIndex];
+      spawnNoteElement(noteData);
+      spawnIndex++;
+    }
+
+    moveActiveNotes(currentTime, fallDuration);
+
+    if (audio.ended && gameState.activeNotes.length === 0) {
+      gameState.isPlaying = false;
+      console.log("Game loop ended.")
+      return;
+    }
+    requestAnimationFrame(loop); // NextFrame
+  }
+  requestAnimationFrame(loop); // Start
 }
 
 // Note Generation Algorithm/Event
@@ -115,28 +148,66 @@ function generateNoteEvents(bpm, difficulty, duration) {
     maxLane = 5;
   }
   else if (difficulty == 3) {
-    step = Math.round((beatinterval / 4) * 100) / 100;
+    step = Math.round((beatinterval / 2) * 100) / 100;
     spawnChance = 0.6;
     maxLane = 7;
   }
   else if (difficulty == 4) {
-    step = Math.round((beatinterval / 8) * 100) / 100;
-    spawnChance = 0.7;
+    step = Math.round((beatinterval / 3) * 100) / 100;
+    spawnChance = 0.6;
     maxLane = 9;
   }
   else if (difficulty == 5) {
-    step = Math.round((beatinterval / 16) * 100) / 100;
-    spawnChance = 0.8;
+    step = Math.round((beatinterval / 3) * 100) / 100;
+    spawnChance = 0.7;
     maxLane = 9;
   }
+
+  gameState.maxLanes = maxLane;
 
   let notes = [];
   for (let t = 0; t < duration; t += step) {
     t = Math.round(t * 100) / 100;
-    if (Math.random() < spawnChance) {
+    if (Math.random() < spawnChance && t >= 1.5) {
       let lane = Math.floor(Math.random() * maxLane);
       notes.push({ time: t, lane: lane });
     }
   }
   return notes;
+}
+
+function getFallDuration(difficulty) {
+  if (difficulty == 1) return 1.5;
+  else if (difficulty == 2) return 1.5;
+  else if (difficulty == 3) return 1.3;
+  else if (difficulty == 4) return 1.1;
+  else if (difficulty == 5) return 1.0;
+}
+
+function spawnNoteElement(noteData) {
+  let laneElement = document.getElementById("lane_" + noteData.lane);
+  let noteElement = document.createElement("div");
+  noteElement.className = "note";
+  noteElement.style.top = "0%";
+  laneElement.appendChild(noteElement);
+  noteData.element = noteElement;
+  gameState.activeNotes.push(noteData);
+  console.log("spawn note:", noteData);
+}
+
+function moveActiveNotes(currentTime, fallDuration) {
+  for (let i = gameState.activeNotes.length - 1; i >= 0; i--) {
+    let noteData = gameState.activeNotes[i];
+    let timeUntilHit = noteData.time - currentTime;
+    let progress = 1 - (timeUntilHit / fallDuration);
+
+    noteData.element.style.top = (progress * 100) + "%";
+
+    if (timeUntilHit < -0.075) {
+      let totalMiss = gameState.accuracyCounts.miss + 1;
+      gameState.accuracyCounts.miss = totalMiss;
+      noteData.element.remove();
+      gameState.activeNotes.splice(i, 1);
+    }
+  }
 }

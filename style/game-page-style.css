@@ -76,7 +76,7 @@ main {
 }
 
 .playing-field {
-    width: 90%;
+    width: 75%;
     height: 80%;
     background: rgba(20, 20, 35, 0.6);
     border: 2px solid #333;
@@ -142,19 +142,14 @@ main {
 .note {
     position: absolute;
     left: 10%;
-    /* 80% width */
     width: 80%;
-    height: 40px;
+    height: 20px;
     background: linear-gradient(180deg, #00d2ff, #0077ff);
     border-radius: 6px;
-    box-shadow: 0 0 10px rgba(0, 210, 255, 0.6);
-    border: 1px solid #fff;
+    box-shadow: 0 0 4px rgba(0, 210, 255, 0.04);
+    border: 1px solid rgb(255, 255, 255, 0.7);
     z-index: 2;
     pointer-events: none;
-    /* Let clicks pass through to key detection */
-    /* Default preview position - JS will override this */
-    top: 50%;
-    transform: translateY(-50%);
 }
 
 
