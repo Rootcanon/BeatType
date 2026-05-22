@@ -37,14 +37,27 @@ let gameState = {
   startTimer: null,
   bpm: 120,
   difficulty: 3,
-  maxLanes: 7
+  maxLanes: 7,
+  totalPointsEarned: 0,
+};
+
+const KEY_TO_LANE = {
+  'KeyA': 'lane_8',
+  'KeyS': 'lane_6',
+  'KeyD': 'lane_2',
+  'KeyF': 'lane_0',
+  'Space': 'lane_4',
+  'KeyJ': 'lane_1',
+  'KeyK': 'lane_3',
+  'KeyL': 'lane_5',
+  'Semicolon': 'lane_7'
 };
 
 // song ID and star rating from URL
 function parseURLParams() {
   let p = new URLSearchParams(window.location.search)
   let id = parseInt(p.get("id") || 1);
-  let star = parseInt(p.get("star") || 3);
+  let star = parseInt(p.get("star") || 1);
   return { id, star };
 }
 
@@ -81,9 +94,18 @@ audio.addEventListener('error', function (e) {
   console.error('Audio error:', e);
 });
 
-// Start key Event listner
+// key Event listner
 window.addEventListener("keydown", function (e) {
-  if (e.code === "Space" && !gameState.isPlaying) {
+  if (gameState.isPlaying) {
+    let laneID = KEY_TO_LANE[e.code];
+    if (laneID) {
+      console.log(e)
+      e.preventDefault();
+      handleKeyPress(laneID);
+    }
+  }
+
+  else if (e.code === "Space" && !gameState.isPlaying) {
     e.preventDefault();
     document.getElementById("start-message").style.display = "none";
     gameState.isPlaying = true;
@@ -92,6 +114,83 @@ window.addEventListener("keydown", function (e) {
     startGameLoop();
   }
 });
+
+function findClosestNote(laneId, currentTime) {
+  let closestNote = null; // Note object
+  let closestDelta = Infinity; // Least distance to bottem
+  gameState.activeNotes.forEach(note => {
+    if (note.laneId === laneId) {
+      let delta = Math.abs(note.time - currentTime); // Current note’s distance
+      if (delta < closestDelta && delta <= 0.100) {
+        closestNote = note;
+        closestDelta = delta;
+      }
+    }
+  });
+  return closestNote;
+}
+
+function handleKeyPress(laneID) {
+  let currentTime = audio.currentTime;
+  let note = findClosestNote(laneID, currentTime);
+  if (note) judgeNote(note, currentTime);
+}
+
+function judgeNote(note, currentTime) {
+  let delta = Math.abs(note.time - currentTime);
+  let basepoints = 0;
+  let judgment;
+  if (delta <= 0.025) {
+    gameState.accuracyCounts.perfect += 1;
+    judgment = "perfect";
+    basepoints = 300;
+  }
+  else if (delta <= 0.050) {
+    gameState.accuracyCounts.great += 1;
+    judgment = "great";
+    basepoints = 200;
+  }
+  else if (delta <= 0.075) {
+    gameState.accuracyCounts.good += 1;
+    judgment = "good";
+    basepoints = 100;
+  }
+  else if (delta <= 0.100) {
+    gameState.accuracyCounts.bad += 1;
+    judgment = "bad";
+    basepoints = 50;
+  }
+
+  gameState.totalPointsEarned += basepoints;
+
+  let hitScore = basepoints * (1 + gameState.combo / 100);
+  gameState.score += hitScore;
+  gameState.combo += 1;
+
+  if (gameState.combo > gameState.maxCombo) gameState.maxCombo = gameState.combo;
+
+  // remove from array
+  let index = gameState.activeNotes.indexOf(note);
+  if (index !== -1) gameState.activeNotes.splice(index, 1);
+
+  // remove from DOM
+  note.element.classList.add(judgment);
+  setTimeout(() => {
+    if (note.element) note.element.remove();
+  }, 100);
+
+
+  updateHUD();
+}
+
+function updateHUD() {
+  document.getElementById('score').textContent = gameState.score;
+  document.getElementById('combo').textContent = gameState.combo;
+
+  let totalHits = (gameState.accuracyCounts.perfect + gameState.accuracyCounts.great + gameState.accuracyCounts.good + gameState.accuracyCounts.bad + gameState.accuracyCounts.miss);
+  let accuracy = totalHits > 0 ? Math.round((gameState.totalPointsEarned / (totalHits * 300)) * 100) : 100;
+  document.getElementById('accuracy').textContent = accuracy + "%";
+}
 
 // Game logic - Run till audio ends.
 function startGameLoop() {
@@ -191,6 +290,7 @@ function spawnNoteElement(noteData) {
   noteElement.style.top = "0%";
   laneElement.appendChild(noteElement);
   noteData.element = noteElement;
+  noteData.laneId = 'lane_' + noteData.lane;
   gameState.activeNotes.push(noteData);
   console.log("spawn note:", noteData);
 }
@@ -200,14 +300,17 @@ function moveActiveNotes(currentTime, fallDuration) {
     let noteData = gameState.activeNotes[i];
     let timeUntilHit = noteData.time - currentTime;
     let progress = 1 - (timeUntilHit / fallDuration);
+    if (progress < 0) progress = 0;
+    if (progress > 1) progress = 1;
 
     noteData.element.style.top = (progress * 100) + "%";
 
     if (timeUntilHit < -0.075) {
-      let totalMiss = gameState.accuracyCounts.miss + 1;
-      gameState.accuracyCounts.miss = totalMiss;
+      gameState.accuracyCounts.miss += 1;
+      gameState.combo = 0;
       noteData.element.remove();
       gameState.activeNotes.splice(i, 1);
+      updateHUD();
     }
   }
 }
