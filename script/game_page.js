@@ -287,7 +287,7 @@ function spawnNoteElement(noteData) {
   let laneElement = document.getElementById("lane_" + noteData.lane);
   let noteElement = document.createElement("div");
   noteElement.className = "note";
-  noteElement.style.top = "0%";
+  noteElement.style.top = "0px";
   laneElement.appendChild(noteElement);
   noteData.element = noteElement;
   noteData.laneId = 'lane_' + noteData.lane;
@@ -302,8 +302,10 @@ function moveActiveNotes(currentTime, fallDuration) {
     let progress = 1 - (timeUntilHit / fallDuration);
     if (progress < 0) progress = 0;
     if (progress > 1) progress = 1;
-
-    noteData.element.style.top = (progress * 100) + "%";
+    
+    let laneElement = document.getElementById(noteData.laneId);
+    let travelHeight = laneElement.clientHeight - 60;
+    noteData.element.style.top = (progress * travelHeight) + "px";
 
     if (timeUntilHit < -0.075) {
       gameState.accuracyCounts.miss += 1;
