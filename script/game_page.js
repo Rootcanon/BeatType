@@ -163,7 +163,7 @@ function judgeNote(note, currentTime) {
 
   gameState.totalPointsEarned += basepoints;
 
-  let hitScore = basepoints * (1 + gameState.combo / 100);
+  let hitScore = Math.round(basepoints * (1 + gameState.combo / 100));
   gameState.score += hitScore;
   gameState.combo += 1;
 
@@ -197,6 +197,7 @@ function startGameLoop() {
   console.log("Game loop started");
 
   gameState.noteEvents = generateNoteEvents(gameState.bpm, gameState.difficulty, audio.duration);
+  updateHUD();
 
   let fallDuration = getFallDuration(gameState.difficulty);
   let spawnIndex = 0;
