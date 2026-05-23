@@ -224,6 +224,7 @@ function startGameLoop() {
 
     if (audio.ended && gameState.activeNotes.length === 0) {
       gameState.isPlaying = false;
+      showResult();
       console.log("Game loop ended.")
       return;
     }
@@ -303,7 +304,7 @@ function moveActiveNotes(currentTime, fallDuration) {
     let progress = 1 - (timeUntilHit / fallDuration);
     if (progress < 0) progress = 0;
     if (progress > 1) progress = 1;
-    
+
     let laneElement = noteData.laneElement;
     let travelHeight = laneElement.clientHeight - 60;
     noteData.element.style.top = (progress * travelHeight) + "px";
@@ -317,3 +318,48 @@ function moveActiveNotes(currentTime, fallDuration) {
     }
   }
 }
+
+function showResult() {
+  let totalHits = (gameState.accuracyCounts.perfect + gameState.accuracyCounts.great + gameState.accuracyCounts.good + gameState.accuracyCounts.bad + gameState.accuracyCounts.miss);
+  let accuracy = totalHits > 0 ? Math.round((gameState.totalPointsEarned / (totalHits * 300)) * 100) : 100;
+  let grade = getGrade(accuracy);
+
+  document.getElementById('result-overlay').style.display = 'flex';
+  document.querySelector('.playing-field').style.display = 'none';
+  document.querySelector('header').style.display = 'none';
+}
+
+function getGrade(percentage) {
+  if (percentage === 100) return "SS";
+  else if (percentage >= 95) return "S";
+  else if (percentage >= 90) return "A";
+  else if (percentage >= 80) return "B";
+  else if (percentage >= 70) return "C";
+  else return "F";
+}
+// Back to Menu btn
+document.getElementById('btn-menu').addEventListener('click', function() {
+  window.location.href = 'index.html';
+});
+// Restart btn
+document.getElementById('btn-restart').addEventListener('click', function() {
+  // Reset game state
+  gameState.score = 0;
+  gameState.combo = 0;
+  gameState.maxCombo = 0;
+  gameState.accuracyCounts = { perfect: 0, great: 0, good: 0, bad: 0, miss: 0 };
+  gameState.totalPointsEarned = 0;
+  gameState.activeNotes = [];
+  gameState.noteEvents = [];
+
+  // Remove any leftover note DOM elements
+  document.querySelectorAll('.note').forEach(n => n.remove());
+
+  // Show playing field, hide results
+  document.getElementById('result-overlay').style.display = 'none';
+  document.querySelector('.playing-field').style.display = 'flex';
+  document.querySelector('header').style.display = 'flex';
+
+  // Start fresh
+  startGameLoop();
+});
