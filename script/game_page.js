@@ -99,7 +99,7 @@ window.addEventListener("keydown", function (e) {
   if (gameState.isPlaying) {
     let laneID = KEY_TO_LANE[e.code];
     if (laneID) {
-      console.log(e)
+      // console.log(e)
       e.preventDefault();
       handleKeyPress(laneID);
     }
@@ -291,8 +291,9 @@ function spawnNoteElement(noteData) {
   laneElement.appendChild(noteElement);
   noteData.element = noteElement;
   noteData.laneId = 'lane_' + noteData.lane;
+  noteData.laneElement = laneElement;
   gameState.activeNotes.push(noteData);
-  console.log("spawn note:", noteData);
+  // console.log("spawn note:", noteData);
 }
 
 function moveActiveNotes(currentTime, fallDuration) {
@@ -303,11 +304,11 @@ function moveActiveNotes(currentTime, fallDuration) {
     if (progress < 0) progress = 0;
     if (progress > 1) progress = 1;
     
-    let laneElement = document.getElementById(noteData.laneId);
+    let laneElement = noteData.laneElement;
     let travelHeight = laneElement.clientHeight - 60;
     noteData.element.style.top = (progress * travelHeight) + "px";
 
-    if (timeUntilHit < -0.075) {
+    if (timeUntilHit < -0.100) {
       gameState.accuracyCounts.miss += 1;
       gameState.combo = 0;
       noteData.element.remove();
