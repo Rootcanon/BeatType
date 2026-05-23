@@ -324,6 +324,16 @@ function showResult() {
   let accuracy = totalHits > 0 ? Math.round((gameState.totalPointsEarned / (totalHits * 300)) * 100) : 100;
   let grade = getGrade(accuracy);
 
+  document.getElementById('grade').querySelector('h1').textContent = grade;
+  document.getElementById('final-score').textContent = gameState.score;
+  document.getElementById('final-combo').textContent = gameState.maxCombo;
+  document.getElementById('final-accuracy').textContent = accuracy + '%';
+  document.getElementById('count-perfect').textContent = gameState.accuracyCounts.perfect;
+  document.getElementById('count-great').textContent = gameState.accuracyCounts.great;
+  document.getElementById('count-good').textContent = gameState.accuracyCounts.good;
+  document.getElementById('count-bad').textContent = gameState.accuracyCounts.bad;
+  document.getElementById('count-miss').textContent = gameState.accuracyCounts.miss;
+
   document.getElementById('result-overlay').style.display = 'flex';
   document.querySelector('.playing-field').style.display = 'none';
   document.querySelector('header').style.display = 'none';
@@ -338,11 +348,11 @@ function getGrade(percentage) {
   else return "F";
 }
 // Back to Menu btn
-document.getElementById('btn-menu').addEventListener('click', function() {
+document.getElementById('btn-menu').addEventListener('click', function () {
   window.location.href = 'index.html';
 });
 // Restart btn
-document.getElementById('btn-restart').addEventListener('click', function() {
+document.getElementById('btn-restart').addEventListener('click', function () {
   // Reset game state
   gameState.score = 0;
   gameState.combo = 0;
