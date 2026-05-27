@@ -5,49 +5,189 @@
     padding: 0;
 }
 
+/* ── Navigation Bar ── */
+#main-nav {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: space-around;
+    gap: 1rem;
+    padding: 1rem;
+    box-shadow: 0 0 8px rgba(86, 68, 192, 0.5);
+    border-radius: 30px;
+}
+
+#main-nav button {
+    background: transparent;
+    border: 1px solid rgb(37, 37, 66);
+    font-size: 1rem;
+    color: #ffffffcc;
+    padding: 0.4rem 1rem;
+    box-shadow: 0 0 3px rgba(26, 26, 46, 0.8);
+    border-radius: 15px;
+
+    cursor: pointer;
+    transition: background 0.5s, color 0.5s;
+}
+
+#main-nav button:hover {
+    background: #00d2ff;
+    color: #050510;
+}
+
+/* ── Main View ── */
+.main-view {
+    width: 90%;
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding-bottom: 2rem;
+}
+
+/* ── User Info Bar ── */
+#user-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    margin-bottom: 2rem;
+}
+
+#stats span {
+    margin-right: 1.5rem;
+    font-family: 'Courier New', monospace;
+    font-size: 1.2rem;
+    color: cyan;
+}
+
+.recent-plays {
+    color: snow;
+    padding: 1rem;
+    border-radius: 15px;
+    border: 1px solid rgba(64, 147, 244, 0.6);
+    box-shadow: 2px 0px 4px rgb(64, 147, 224, 0.5);
+}
+
+.recent-plays h3 {
+    text-shadow: 0 0 10px rgba(0, 210, 255, 0.5);
+    margin-bottom: 1rem;
+}
+
+/* .recent-plays-cards {} */
+
+/* ── Beatmap Section ── */
+#beatmap-section {
+    padding: 1rem;
+    border-radius: 15px;
+    box-shadow: 2px 0px 5px rgb(64, 147, 224, 0.5);
+}
+
+#beatmap-section h2 {
+    font-size: 1.75rem;
+    text-shadow: 0 0 10px rgba(0, 210, 255, 0.5);
+    margin-bottom: 1rem;
+}
+
+
+#filter {
+    margin-bottom: 1rem;
+}
+
+#filter label {
+    margin-right: 1rem;
+}
+
+#filter select {
+    background: transparent;
+    color: snow;
+    border: 2px solid rgb(37, 37, 66);
+    padding: 0.3rem 0.8rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+}
+
+#filter select option {
+    background: #1a1a2e;
+    color: #ffffff;
+}
+
+hr {
+    border-color: #333;
+    margin-bottom: 1rem;
+}
+
+/* ── Beatmap Card grid ── */
+#beatmap-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    overflow-y: auto;
+}
+
+.beatmap-card {
+    background: rgba(20, 20, 35, 0.8);
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.beatmap-card:hover {
+    transform: translateY(-3px);
+    border-color: #00d2ff;
+}
+
+.beatmap-card h3 {
+    font-size: 1.3rem;
+    color: cyan;
+    margin-bottom: 1rem;
+}
+
+.beatmap-card .card-controls {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    align-items: center;
+}
+
+.beatmap-card select {
+    background: #1a1a2e;
+    color: white;
+    border: 1px solid #00d2ff;
+    padding: 0.3rem 0.5rem;
+    border-radius: 4px;
+}
+
+.beatmap-card button {
+    background: #00d2ff;
+    color: #050510;
+    border: none;
+    padding: 0.4rem 1.2rem;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.beatmap-card button:hover {
+    background: #00a8cc;
+}
+
 body {
     background-color: #050510;
     background-image: radial-gradient(at center, #1a1a2e 0%, #000000cc 100%);
     color: #ffffff;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     height: 100vh;
-    /* width: 100vw; */
-    overflow: hidden;
+
+    overflow-x: hidden;
+    overflow-y: auto;
 
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
 }
-
-
-/* HUD */
-
-header {
-    position: absolute;
-    top: 20px;
-    width: 100%;
-    display: flex;
-    justify-content: space-around;
-    pointer-events: none;
-}
-
-header label {
-    display: block;
-    font-size: 0.8rem;
-    color: #cccccc;
-    text-transform: uppercase;
-}
-
-header span {
-    display: block;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 1.8rem;
-    font-weight: bold;
-    color: cyan;
-    text-shadow: 0 0 10px rgb(0, 208, 255, 0.5);
-}
-
 
 /* Start message */
 #start-message {
@@ -65,14 +205,35 @@ header span {
     z-index: 10;
 }
 
+/* Game HUD */
+#game-hud {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+#game-hud label {
+    display: block;
+    font-size: 0.8rem;
+    color: #cccccc;
+    text-transform: uppercase;
+}
+#game-hud span {
+    display: block;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: cyan;
+    text-shadow: 0 0 10px rgba(0, 208, 255, 0.5);
+}
+
 /* playing area */
 main {
     position: relative;
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     width: 100%;
-    height: 100%;
 }
 
 .playing-field {
@@ -82,11 +243,9 @@ main {
     border: 2px solid #333;
     border-radius: 8px;
     display: flex;
-    /* Arranges lanes horizontally */
     position: relative;
     box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
     overflow: hidden;
-    /* Clips notes at top/bottom */
 }
 
 
@@ -126,8 +285,6 @@ main {
 .key-indicator {
     position: absolute;
     bottom: 4px;
-    /* align-content: center; */
-    /* justify-content: center; */
     left: 50%;
     transform: translateX(-50%);
     padding: 4px 12px;
@@ -138,7 +295,6 @@ main {
 
 
 /* Note Styling (Dynamic Class) */
-
 .note {
     position: absolute;
     left: 10%;
@@ -185,15 +341,12 @@ main {
     position: fixed;
     width: 100%;
     height: 100%;
-    /* background: rgba(20, 20, 35, 0.8); */
     background-image: radial-gradient(at center, #1a1a2e 0%, #000000cc 100%);
     border: 2px solid #333;
     border-radius: 20px;
-    display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    /* font-size: 2.5rem; */
     font-weight: bold;
     z-index: 10;
     display: none;
@@ -236,18 +389,17 @@ main {
     gap: 10px;
     position: relative;
     box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
     margin-top: 10px;
 }
 
 .result-breakdown span {
-    /* display: block; */
     font-family: 'Courier New', Courier, monospace;
     font-weight: bold;
     color: cyan;
     text-shadow: 0 0 10px rgb(0, 208, 255, 0.5);
 }
-
 
 #result-overlay .btn {
     background: transparent;
