@@ -3,31 +3,37 @@
         {
             "id": 1,
             "title": "tuki - ZERO",
+            "difficulties":[1,2,3],
             "filePath": "./assets/songs/tuki - ZERO.webm"
         },
         {
             "id": 2,
             "title": "tuki - HYURURIRAPAPPA",
+            "difficulties":[2,4],
             "filePath": "./assets/songs/tuki - HYURURIRAPAPPA.webm"
         },
         {
             "id": 3,
             "title": "He's a Pirate",
+            "difficulties":[4,5],
             "filePath": "./assets/songs/He's a Pirate.webm"
         },
         {
             "id": 4,
             "title": "Gravity Falls",
+            "difficulties":[2,3],
             "filePath": "./assets/songs/Gravity Falls opening theme.webm"
         },
         {
             "id": 5,
             "title": "BURNOUT SYNDROMES - Hikariare",
+            "difficulties":[1,2],
             "filePath": "./assets/songs/BURNOUT SYNDROMES - Hikariare.webm"
         },
         {
             "id": 6,
             "title": "Binks no Sake",
+            "difficulties":[1,2],
             "filePath": "./assets/songs/Binks no Sake.webm"
         }
     ]
