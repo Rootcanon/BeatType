@@ -1,15 +1,89 @@
-// all variables required
+// DOM Refrence Variables
 const beatmapCardsContainer = document.getElementById("beatmap-cards");
 const difficultyFilter = document.getElementById("difficulty-filter");
-let allBeatmaps = [];
+const audio = document.getElementById("game-audio");
 
-// Wait for all DOMs to load
+// Global Data
+let allBeatmaps = [];
+let currentBeatmap = null;
+let currentStar = 3;
+const difficultyBPM = { 1: 60, 2: 80, 3: 100, 4: 120, 5: 140 };
+let gameState = {
+  isPlaying: false,
+  score: 0,
+  combo: 0,
+  maxCombo: 0,
+  accuracyCounts: { perfect: 0, great: 0, good: 0, bad: 0, miss: 0 },
+  activeNotes: [],
+  noteEvents: [],
+  startTimer: null,
+  bpm: 120,
+  difficulty: 3,
+  maxLanes: 7,
+  totalPointsEarned: 0,
+  offset: 0,
+};
+const KEY_TO_LANE = {
+  KeyF: "lane_0",
+  KeyJ: "lane_1",
+  KeyD: "lane_2",
+  KeyK: "lane_3",
+  Space: "lane_4",
+  KeyL: "lane_5",
+  KeyS: "lane_6",
+  Semicolon: "lane_7",
+  KeyA: "lane_8",
+};
+
+
+// Wait for all DOMs to load Event Listner
 document.addEventListener("DOMContentLoaded", () => {
   console.log("App ready");
-
   fetchBeatmaps();
 });
 
+// Filter Event Listeners
+difficultyFilter.addEventListener("change", applyFilter);
+
+// Audio Event Listner
+audio.addEventListener("canplaythrough", function () {
+  console.log("Audio ready");
+});
+audio.addEventListener("error", function (e) {
+  console.error("Audio error:", e);
+});
+
+// key Event listner
+window.addEventListener("keydown", function (e) {
+  if (gameState.isPlaying) {
+    let laneID = KEY_TO_LANE[e.code];
+    if (laneID) {
+      e.preventDefault();
+      handleKeyPress(laneID);
+    }
+  } else if (e.code === "Space" && !gameState.isPlaying) {
+    e.preventDefault();
+    document.getElementById("start-message").style.display = "none";
+    gameState.isPlaying = true;
+
+    audio.play();
+    startGameLoop();
+  }
+});
+
+// Back to Menu btn
+document.getElementById("btn-menu").addEventListener("click", function () {
+  window.location.href = "index.html";
+});
+// Restart btn - new
+document.getElementById("btn-restart").addEventListener("click", function () {
+  if (currentBeatmap) {
+    startGame(currentBeatmap, currentStar);
+  }
+});
+
+
+// ------ Beatmap fetching & rendering functions ------
 // Loading and Error for Beatmap cards
 function showLoading() {
   beatmapCardsContainer.textContent = "loading beatmaps...";
@@ -25,7 +99,7 @@ async function fetchBeatmaps() {
     const response = await fetch("http://localhost:3000/beatmaps");
     if (!response.ok) throw new Error("Server Error");
     allBeatmaps = await response.json();
-    applyFilter(allBeatmaps);
+    applyFilter();
   } catch (error) {
     showError("Failed to load beatmaps.");
   }
@@ -82,63 +156,11 @@ function renderBeatmaps(cardData) {
     beatmapCardsContainer.appendChild(card);
   });
 }
+// ------ Beatmap fetching & rendering functions ------
 
-// Event Listeners
-difficultyFilter.addEventListener("change", applyFilter);
 
-// Copyed from game_page.js
-
-const audio = document.getElementById("game-audio"); // new
-let currentBeatmap = null; // new
-let currentStar = 3; // new
-
-// difficultyBPM maps star rating (1-5) to beats per minute
-const difficultyBPM = { 1: 60, 2: 80, 3: 100, 4: 120, 5: 140 };
-
-// Game State with defult values
-let gameState = {
-  isPlaying: false,
-  score: 0,
-  combo: 0,
-  maxCombo: 0,
-  accuracyCounts: { perfect: 0, great: 0, good: 0, bad: 0, miss: 0 },
-  activeNotes: [],
-  noteEvents: [],
-  startTimer: null,
-  bpm: 120,
-  difficulty: 3,
-  maxLanes: 7,
-  totalPointsEarned: 0,
-  offset: 0,
-};
-
-// Key input coresponding to lane
-const KEY_TO_LANE = {
-  KeyF: "lane_0",
-  KeyJ: "lane_1",
-  KeyD: "lane_2",
-  KeyK: "lane_3",
-  Space: "lane_4",
-  KeyL: "lane_5",
-  KeyS: "lane_6",
-  Semicolon: "lane_7",
-  KeyA: "lane_8",
-};
-
-// Convert star rating to BPM, with fallback
-function getBPM(star) {
-  return difficultyBPM[star] ?? 100;
-}
-// Fall Duration of note
-function getFallDuration(difficulty) {
-  if (difficulty == 1) return 2;
-  else if (difficulty == 2) return 2;
-  else if (difficulty == 3) return 1.9;
-  else if (difficulty == 4) return 1.9;
-  else if (difficulty == 5) return 1.9;
-}
-
-// new
+// ------ Game start & state functions ------
+// Game start
 function startGame(beatmap, star) {
   // Store for Replay
   currentBeatmap = beatmap;
@@ -147,7 +169,14 @@ function startGame(beatmap, star) {
   gameState.score = 0;
   gameState.combo = 0;
   gameState.maxCombo = 0;
-  gameState.accuracyCounts = { perfect: 0, great: 0, good: 0, bad: 0, miss: 0 };
+  gameState.isPlaying = false;
+  gameState.accuracyCounts = {
+    perfect: 0,
+    great: 0,
+    good: 0,
+    bad: 0,
+    miss: 0,
+  };
   gameState.totalPointsEarned = 0;
   gameState.activeNotes = [];
   gameState.noteEvents = [];
@@ -161,45 +190,35 @@ function startGame(beatmap, star) {
   // Hide result overlay and show playing field again
   document.getElementById("result-overlay").style.display = "none";
   document.querySelector(".playing-field").style.display = "flex";
-  
+
   // Switch views
   document.querySelector("#main-nav").style.display = "none";
   document.querySelector(".main-view").style.display = "none";
   document.body.style.justifyContent = "flex-start";
   document.body.style.overflow = "hidden";
   document.querySelector(".game-view").hidden = false;
-  
-  // show "Press SPACE"
+
+  // show "Press SPACE to Start"
   document.getElementById("start-message").style.display = "flex";
 }
 
-// Audio Event Listner
-audio.addEventListener("canplaythrough", function () {
-  console.log("Audio ready");
-});
-audio.addEventListener("error", function (e) {
-  console.error("Audio error:", e);
-});
+// Convert star rating to BPM, with fallback
+function getBPM(star) {
+  return difficultyBPM[star] ?? 100;
+}
 
-// key Event listner
-window.addEventListener("keydown", function (e) {
-  if (gameState.isPlaying) {
-    let laneID = KEY_TO_LANE[e.code];
-    if (laneID) {
-      // console.log(e)
-      e.preventDefault();
-      handleKeyPress(laneID);
-    }
-  } else if (e.code === "Space" && !gameState.isPlaying) {
-    e.preventDefault();
-    document.getElementById("start-message").style.display = "none";
-    gameState.isPlaying = true;
+// Fall Duration of note
+function getFallDuration(difficulty) {
+  if (difficulty == 1) return 2;
+  else if (difficulty == 2) return 2;
+  else if (difficulty == 3) return 1.9;
+  else if (difficulty == 4) return 1.9;
+  else if (difficulty == 5) return 1.9;
+}
+// ------ Game start & state functions ------
 
-    audio.play();
-    startGameLoop();
-  }
-});
 
+// ------ Game loop & mechanics ------
 function findClosestNote(laneId, currentTime) {
   let closestNote = null; // Note object
   let closestDelta = Infinity; // Least distance to bottem
@@ -285,7 +304,7 @@ function updateHUD() {
   document.getElementById("accuracy").textContent = accuracy + "%";
 }
 
-// Game logic - Run till audio ends.
+// Game loop logic - Run till audio ends.
 function startGameLoop() {
   console.log("Game loop started");
 
@@ -313,51 +332,6 @@ function startGameLoop() {
   let speed = travelHeight / fallDuration;
   let offset = 18 / speed; // time to travel from neon line to bottom
   gameState.offset = offset;
-
-  // remove
-  let visibleLaneEls = [];
-  for (let i = 0; i < gameState.maxLanes; i++) {
-    let el = document.getElementById("lane_" + i);
-    if (el) visibleLaneEls.push(el);
-  }
-
-  let perfectPx = 0.025 * speed;
-  let greatPx = 0.05 * speed;
-  let goodPx = 0.075 * speed;
-  let badPx = 0.1 * speed;
-  let neonCenterY = laneHeight - 70; // center of note at perfect (top of neon line + 10px)
-
-  visibleLaneEls.forEach((lane) => {
-    // Remove any previously added lines
-    let oldLines = lane.querySelectorAll(".judgment-line");
-    oldLines.forEach((l) => l.remove());
-
-    // Create lines
-    function addLine(y, color, label) {
-      let line = document.createElement("div");
-      line.className = "judgment-line";
-      line.style.position = "absolute";
-      line.style.left = "0";
-      line.style.width = "100%";
-      line.style.height = "1px";
-      line.style.background = color;
-      line.style.top = y + "px";
-      line.style.zIndex = "6";
-      line.style.pointerEvents = "none";
-      line.title = label;
-      lane.appendChild(line);
-    }
-
-    addLine(neonCenterY - perfectPx, "lime", "perfect upper");
-    addLine(neonCenterY + perfectPx, "lime", "perfect lower");
-    addLine(neonCenterY - greatPx, "cyan", "great upper");
-    addLine(neonCenterY + greatPx, "cyan", "great lower");
-    addLine(neonCenterY - goodPx, "yellow", "good upper");
-    addLine(neonCenterY + goodPx, "yellow", "good lower");
-    addLine(neonCenterY - badPx, "orange", "bad upper");
-    addLine(neonCenterY + badPx, "orange", "bad lower");
-  });
-  //remove
 
   function loop() {
     if (!gameState.isPlaying) return;
@@ -435,7 +409,6 @@ function spawnNoteElement(noteData) {
   noteData.laneId = "lane_" + noteData.lane;
   noteData.laneElement = laneElement;
   gameState.activeNotes.push(noteData);
-  // console.log("spawn note:", noteData);
 }
 
 function moveActiveNotes(currentTime, fallDuration) {
@@ -459,7 +432,10 @@ function moveActiveNotes(currentTime, fallDuration) {
     }
   }
 }
+// ------ Game loop & mechanics ------
 
+
+// ------ Results & grade ------
 function showResult() {
   let totalHits =
     gameState.accuracyCounts.perfect +
@@ -501,13 +477,4 @@ function getGrade(percentage) {
   else if (percentage >= 70) return "C";
   else return "F";
 }
-// Back to Menu btn
-document.getElementById("btn-menu").addEventListener("click", function () {
-  window.location.href = "index.html";
-});
-// Restart btn - new
-document.getElementById("btn-restart").addEventListener("click", function () {
-  if (currentBeatmap) {
-    startGame(currentBeatmap, currentStar);
-  }
-});
+// ------ Results & grade ------
