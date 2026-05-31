@@ -71,6 +71,7 @@ function renderBeatmaps(cardData) {
     playBtn.textContent = "Play";
     playBtn.addEventListener("click", () => {
       console.log("Play:", element.title, "Difficulty:", select.value);
+      startGame(element, parseInt(select.value));
     });
 
     card.appendChild(title);
@@ -84,3 +85,429 @@ function renderBeatmaps(cardData) {
 
 // Event Listeners
 difficultyFilter.addEventListener("change", applyFilter);
+
+// Copyed from game_page.js
+
+const audio = document.getElementById("game-audio"); // new
+let currentBeatmap = null; // new
+let currentStar = 3; // new
+
+// difficultyBPM maps star rating (1-5) to beats per minute
+const difficultyBPM = { 1: 60, 2: 80, 3: 100, 4: 120, 5: 140 };
+
+// Game State with defult values
+let gameState = {
+  isPlaying: false,
+  score: 0,
+  combo: 0,
+  maxCombo: 0,
+  accuracyCounts: { perfect: 0, great: 0, good: 0, bad: 0, miss: 0 },
+  activeNotes: [],
+  noteEvents: [],
+  startTimer: null,
+  bpm: 120,
+  difficulty: 3,
+  maxLanes: 7,
+  totalPointsEarned: 0,
+  offset: 0,
+};
+
+// Key input coresponding to lane
+const KEY_TO_LANE = {
+  KeyF: "lane_0",
+  KeyJ: "lane_1",
+  KeyD: "lane_2",
+  KeyK: "lane_3",
+  Space: "lane_4",
+  KeyL: "lane_5",
+  KeyS: "lane_6",
+  Semicolon: "lane_7",
+  KeyA: "lane_8",
+};
+
+// Convert star rating to BPM, with fallback
+function getBPM(star) {
+  return difficultyBPM[star] ?? 100;
+}
+// Fall Duration of note
+function getFallDuration(difficulty) {
+  if (difficulty == 1) return 2;
+  else if (difficulty == 2) return 2;
+  else if (difficulty == 3) return 1.9;
+  else if (difficulty == 4) return 1.9;
+  else if (difficulty == 5) return 1.9;
+}
+
+// new
+function startGame(beatmap, star) {
+  // Store for Replay
+  currentBeatmap = beatmap;
+  currentStar = star;
+  // Reset game state
+  gameState.score = 0;
+  gameState.combo = 0;
+  gameState.maxCombo = 0;
+  gameState.accuracyCounts = { perfect: 0, great: 0, good: 0, bad: 0, miss: 0 };
+  gameState.totalPointsEarned = 0;
+  gameState.activeNotes = [];
+  gameState.noteEvents = [];
+  document.querySelectorAll(".note").forEach((n) => n.remove());
+
+  // Set up audio
+  audio.src = beatmap.filePath;
+  gameState.bpm = getBPM(star);
+  gameState.difficulty = star;
+
+  // Hide result overlay and show playing field again
+  document.getElementById("result-overlay").style.display = "none";
+  document.querySelector(".playing-field").style.display = "flex";
+  
+  // Switch views
+  document.querySelector("#main-nav").style.display = "none";
+  document.querySelector(".main-view").style.display = "none";
+  document.body.style.justifyContent = "flex-start";
+  document.body.style.overflow = "hidden";
+  document.querySelector(".game-view").hidden = false;
+  
+  // show "Press SPACE"
+  document.getElementById("start-message").style.display = "flex";
+}
+
+// Audio Event Listner
+audio.addEventListener("canplaythrough", function () {
+  console.log("Audio ready");
+});
+audio.addEventListener("error", function (e) {
+  console.error("Audio error:", e);
+});
+
+// key Event listner
+window.addEventListener("keydown", function (e) {
+  if (gameState.isPlaying) {
+    let laneID = KEY_TO_LANE[e.code];
+    if (laneID) {
+      // console.log(e)
+      e.preventDefault();
+      handleKeyPress(laneID);
+    }
+  } else if (e.code === "Space" && !gameState.isPlaying) {
+    e.preventDefault();
+    document.getElementById("start-message").style.display = "none";
+    gameState.isPlaying = true;
+
+    audio.play();
+    startGameLoop();
+  }
+});
+
+function findClosestNote(laneId, currentTime) {
+  let closestNote = null; // Note object
+  let closestDelta = Infinity; // Least distance to bottem
+  let offset = gameState.offset;
+  gameState.activeNotes.forEach((note) => {
+    if (note.laneId === laneId) {
+      let adjustedTime = note.time - offset;
+      let delta = Math.abs(adjustedTime - currentTime); // Current note’s distance
+      if (delta < closestDelta && delta <= 0.1) {
+        closestNote = note;
+        closestDelta = delta;
+      }
+    }
+  });
+  return closestNote;
+}
+
+function handleKeyPress(laneID) {
+  let currentTime = audio.currentTime;
+  let note = findClosestNote(laneID, currentTime);
+  if (note) judgeNote(note, currentTime);
+}
+
+function judgeNote(note, currentTime) {
+  let offset = gameState.offset;
+  let delta = Math.abs(note.time - currentTime - offset);
+  let basepoints = 0;
+  let judgment;
+  if (delta <= 0.025) {
+    gameState.accuracyCounts.perfect += 1;
+    judgment = "perfect";
+    basepoints = 300;
+  } else if (delta <= 0.05) {
+    gameState.accuracyCounts.great += 1;
+    judgment = "great";
+    basepoints = 200;
+  } else if (delta <= 0.075) {
+    gameState.accuracyCounts.good += 1;
+    judgment = "good";
+    basepoints = 100;
+  } else if (delta <= 0.1) {
+    gameState.accuracyCounts.bad += 1;
+    judgment = "bad";
+    basepoints = 50;
+  }
+
+  gameState.totalPointsEarned += basepoints;
+
+  let hitScore = Math.round(basepoints * (1 + gameState.combo / 100));
+  gameState.score += hitScore;
+  gameState.combo += 1;
+
+  if (gameState.combo > gameState.maxCombo)
+    gameState.maxCombo = gameState.combo;
+
+  // remove from array
+  let index = gameState.activeNotes.indexOf(note);
+  if (index !== -1) gameState.activeNotes.splice(index, 1);
+
+  // remove from DOM
+  note.element.classList.add(judgment);
+  setTimeout(() => {
+    if (note.element) note.element.remove();
+  }, 100);
+
+  updateHUD();
+}
+
+function updateHUD() {
+  document.getElementById("score").textContent = gameState.score;
+  document.getElementById("combo").textContent = gameState.combo;
+
+  let totalHits =
+    gameState.accuracyCounts.perfect +
+    gameState.accuracyCounts.great +
+    gameState.accuracyCounts.good +
+    gameState.accuracyCounts.bad +
+    gameState.accuracyCounts.miss;
+  let accuracy =
+    totalHits > 0
+      ? Math.round((gameState.totalPointsEarned / (totalHits * 300)) * 100)
+      : 100;
+  document.getElementById("accuracy").textContent = accuracy + "%";
+}
+
+// Game logic - Run till audio ends.
+function startGameLoop() {
+  console.log("Game loop started");
+
+  gameState.noteEvents = generateNoteEvents(
+    gameState.bpm,
+    gameState.difficulty,
+    audio.duration,
+  );
+  updateHUD();
+
+  let fallDuration = getFallDuration(gameState.difficulty);
+  let spawnIndex = 0;
+
+  // Hides unusedLanes
+  let maxLane = gameState.maxLanes;
+  for (let i = maxLane; i <= 8; i += 1) {
+    let laneEl = document.getElementById("lane_" + i);
+    laneEl.style.display = "none";
+  }
+
+  // Calculate Offset required to be perfect on neon line.
+  let referenceLane = document.getElementById("lane_0");
+  let laneHeight = referenceLane.clientHeight;
+  let travelHeight = laneHeight - 60; // distance from top to hitlane bottom
+  let speed = travelHeight / fallDuration;
+  let offset = 18 / speed; // time to travel from neon line to bottom
+  gameState.offset = offset;
+
+  // remove
+  let visibleLaneEls = [];
+  for (let i = 0; i < gameState.maxLanes; i++) {
+    let el = document.getElementById("lane_" + i);
+    if (el) visibleLaneEls.push(el);
+  }
+
+  let perfectPx = 0.025 * speed;
+  let greatPx = 0.05 * speed;
+  let goodPx = 0.075 * speed;
+  let badPx = 0.1 * speed;
+  let neonCenterY = laneHeight - 70; // center of note at perfect (top of neon line + 10px)
+
+  visibleLaneEls.forEach((lane) => {
+    // Remove any previously added lines
+    let oldLines = lane.querySelectorAll(".judgment-line");
+    oldLines.forEach((l) => l.remove());
+
+    // Create lines
+    function addLine(y, color, label) {
+      let line = document.createElement("div");
+      line.className = "judgment-line";
+      line.style.position = "absolute";
+      line.style.left = "0";
+      line.style.width = "100%";
+      line.style.height = "1px";
+      line.style.background = color;
+      line.style.top = y + "px";
+      line.style.zIndex = "6";
+      line.style.pointerEvents = "none";
+      line.title = label;
+      lane.appendChild(line);
+    }
+
+    addLine(neonCenterY - perfectPx, "lime", "perfect upper");
+    addLine(neonCenterY + perfectPx, "lime", "perfect lower");
+    addLine(neonCenterY - greatPx, "cyan", "great upper");
+    addLine(neonCenterY + greatPx, "cyan", "great lower");
+    addLine(neonCenterY - goodPx, "yellow", "good upper");
+    addLine(neonCenterY + goodPx, "yellow", "good lower");
+    addLine(neonCenterY - badPx, "orange", "bad upper");
+    addLine(neonCenterY + badPx, "orange", "bad lower");
+  });
+  //remove
+
+  function loop() {
+    if (!gameState.isPlaying) return;
+
+    let currentTime = audio.currentTime;
+
+    while (
+      spawnIndex < gameState.noteEvents.length &&
+      gameState.noteEvents[spawnIndex].time <= currentTime + fallDuration
+    ) {
+      let noteData = gameState.noteEvents[spawnIndex];
+      spawnNoteElement(noteData);
+      spawnIndex++;
+    }
+
+    moveActiveNotes(currentTime, fallDuration);
+
+    if (audio.ended && gameState.activeNotes.length === 0) {
+      gameState.isPlaying = false;
+      showResult();
+      console.log("Game loop ended.");
+      return;
+    }
+    requestAnimationFrame(loop); // NextFrame
+  }
+  requestAnimationFrame(loop); // Start
+}
+
+// Note Generation Algorithm/Event
+function generateNoteEvents(bpm, difficulty, duration) {
+  let beatinterval = 60 / bpm;
+  let step, spawnChance, maxLane;
+  if (difficulty == 1) {
+    step = Math.round(beatinterval * 100) / 100;
+    spawnChance = 0.5;
+    maxLane = 4;
+  } else if (difficulty == 2) {
+    step = Math.round((beatinterval / 2) * 100) / 100;
+    spawnChance = 0.5;
+    maxLane = 5;
+  } else if (difficulty == 3) {
+    step = Math.round((beatinterval / 2) * 100) / 100;
+    spawnChance = 0.6;
+    maxLane = 7;
+  } else if (difficulty == 4) {
+    step = Math.round((beatinterval / 3) * 100) / 100;
+    spawnChance = 0.6;
+    maxLane = 9;
+  } else if (difficulty == 5) {
+    step = Math.round((beatinterval / 3) * 100) / 100;
+    spawnChance = 0.7;
+    maxLane = 9;
+  }
+
+  gameState.maxLanes = maxLane;
+
+  let notes = [];
+  for (let t = 0; t < duration; t += step) {
+    t = Math.round(t * 100) / 100;
+    if (Math.random() < spawnChance && t >= 1.5) {
+      let lane = Math.floor(Math.random() * maxLane);
+      notes.push({ time: t, lane: lane });
+    }
+  }
+  return notes;
+}
+
+function spawnNoteElement(noteData) {
+  let laneElement = document.getElementById("lane_" + noteData.lane);
+  let noteElement = document.createElement("div");
+  noteElement.className = "note";
+  noteElement.style.top = "0px";
+  laneElement.appendChild(noteElement);
+  noteData.element = noteElement;
+  noteData.laneId = "lane_" + noteData.lane;
+  noteData.laneElement = laneElement;
+  gameState.activeNotes.push(noteData);
+  // console.log("spawn note:", noteData);
+}
+
+function moveActiveNotes(currentTime, fallDuration) {
+  for (let i = gameState.activeNotes.length - 1; i >= 0; i--) {
+    let noteData = gameState.activeNotes[i];
+    let timeUntilHit = noteData.time - currentTime;
+    let progress = 1 - timeUntilHit / fallDuration;
+    if (progress < 0) progress = 0;
+    if (progress > 1) progress = 1;
+
+    let laneElement = noteData.laneElement;
+    let travelHeight = laneElement.clientHeight - 60;
+    noteData.element.style.top = progress * travelHeight + "px";
+
+    if (timeUntilHit < -0.1) {
+      gameState.accuracyCounts.miss += 1;
+      gameState.combo = 0;
+      noteData.element.remove();
+      gameState.activeNotes.splice(i, 1);
+      updateHUD();
+    }
+  }
+}
+
+function showResult() {
+  let totalHits =
+    gameState.accuracyCounts.perfect +
+    gameState.accuracyCounts.great +
+    gameState.accuracyCounts.good +
+    gameState.accuracyCounts.bad +
+    gameState.accuracyCounts.miss;
+  let accuracy =
+    totalHits > 0
+      ? Math.round((gameState.totalPointsEarned / (totalHits * 300)) * 100)
+      : 100;
+  let grade = getGrade(accuracy);
+
+  document.getElementById("grade").querySelector("h1").textContent = grade;
+  document.getElementById("final-score").textContent = gameState.score;
+  document.getElementById("final-combo").textContent = gameState.maxCombo;
+  document.getElementById("final-accuracy").textContent = accuracy + "%";
+  document.getElementById("count-perfect").textContent =
+    gameState.accuracyCounts.perfect;
+  document.getElementById("count-great").textContent =
+    gameState.accuracyCounts.great;
+  document.getElementById("count-good").textContent =
+    gameState.accuracyCounts.good;
+  document.getElementById("count-bad").textContent =
+    gameState.accuracyCounts.bad;
+  document.getElementById("count-miss").textContent =
+    gameState.accuracyCounts.miss;
+
+  document.getElementById("result-overlay").style.display = "flex";
+  document.querySelector(".playing-field").style.display = "none";
+  document.querySelector("header").style.display = "none";
+}
+
+function getGrade(percentage) {
+  if (percentage === 100) return "SS";
+  else if (percentage >= 95) return "S";
+  else if (percentage >= 90) return "A";
+  else if (percentage >= 80) return "B";
+  else if (percentage >= 70) return "C";
+  else return "F";
+}
+// Back to Menu btn
+document.getElementById("btn-menu").addEventListener("click", function () {
+  window.location.href = "index.html";
+});
+// Restart btn - new
+document.getElementById("btn-restart").addEventListener("click", function () {
+  if (currentBeatmap) {
+    startGame(currentBeatmap, currentStar);
+  }
+});

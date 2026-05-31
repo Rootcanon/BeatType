@@ -119,7 +119,6 @@ hr {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 1rem;
-    overflow-y: auto;
 }
 
 .beatmap-card {
@@ -178,7 +177,6 @@ body {
     background-image: radial-gradient(at center, #1a1a2e 0%, #000000cc 100%);
     color: #ffffff;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    height: 100vh;
 
     overflow-x: hidden;
     overflow-y: auto;
@@ -188,6 +186,21 @@ body {
     align-items: center;
     justify-content: center;
 }
+
+.game-view:not([hidden]) {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #050510;
+  background-image: radial-gradient(at center, #1a1a2e 0%, #000000cc 100%);
+  z-index: 50;
+}   
 
 /* Start message */
 #start-message {
