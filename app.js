@@ -35,7 +35,6 @@ const KEY_TO_LANE = {
   KeyA: "lane_8",
 };
 
-
 // Wait for all DOMs to load Event Listner
 document.addEventListener("DOMContentLoaded", () => {
   console.log("App ready");
@@ -82,6 +81,39 @@ document.getElementById("btn-restart").addEventListener("click", function () {
   }
 });
 
+// Prevent form submition
+document
+  .getElementById("score-submission")
+  .addEventListener("submit", function (e) {
+    e.preventDefault();
+  });
+
+// Score Submit Event listener
+document.getElementById("btn-submit-score").addEventListener("click", () => {
+  // hide result
+  document.querySelector(".result").style.display = "none";
+  document.querySelector(".result-breakdown").style.display = "none";
+  document.getElementById("btns").style.display = "none";
+
+  // Show form
+  const form = document.getElementById("score-submission");
+  form.style.display = "flex";
+  form.hidden = false; // in case the hidden attribute is still present
+  document.getElementById("player-name").value = "";
+  document.getElementById("name-error").textContent = "";
+  document.getElementById("submit-error").textContent = "";
+});
+
+// Cancel submission – go back to stats
+document.getElementById("cancel-submit-btn").addEventListener("click", () => {
+  // hide form
+  document.getElementById("score-submission").style.display = "none";
+
+  // Show result
+  document.querySelector(".result").style.display = "flex";
+  document.querySelector(".result-breakdown").style.display = "flex";
+  document.getElementById("btns").style.display = "flex";
+});
 
 // ------ Beatmap fetching & rendering functions ------
 // Loading and Error for Beatmap cards
@@ -158,7 +190,6 @@ function renderBeatmaps(cardData) {
 }
 // ------ Beatmap fetching & rendering functions ------
 
-
 // ------ Game start & state functions ------
 // Game start
 function startGame(beatmap, star) {
@@ -216,7 +247,6 @@ function getFallDuration(difficulty) {
   else if (difficulty == 5) return 1.9;
 }
 // ------ Game start & state functions ------
-
 
 // ------ Game loop & mechanics ------
 function findClosestNote(laneId, currentTime) {
@@ -434,7 +464,6 @@ function moveActiveNotes(currentTime, fallDuration) {
 }
 // ------ Game loop & mechanics ------
 
-
 // ------ Results & grade ------
 function showResult() {
   let totalHits =
@@ -449,6 +478,7 @@ function showResult() {
       : 100;
   let grade = getGrade(accuracy);
 
+  // result
   document.getElementById("grade").querySelector("h1").textContent = grade;
   document.getElementById("final-score").textContent = gameState.score;
   document.getElementById("final-combo").textContent = gameState.maxCombo;
@@ -478,3 +508,54 @@ function getGrade(percentage) {
   else return "F";
 }
 // ------ Results & grade ------
+
+// ------ Result Submit ------
+document
+  .getElementById("submit-name-btn")
+  .addEventListener("click", async (e) => {
+    e.preventDefault();
+    const nameInput = document.getElementById("player-name");
+    const nameError = document.getElementById("name-error");
+    const submitError = document.getElementById("submit-error");
+
+    // Validate
+    if (nameInput.value.trim().length < 2) {
+      nameError.textContent = "Name must be at least 2 characters.";
+      return;
+    }
+    nameError.textContent = "";
+
+    // Build score object
+    const newScore = {
+      player: nameInput.value.trim(),
+      score: gameState.score,
+      maxCombo: gameState.maxCombo,
+      accuracy: document.getElementById("final-accuracy").textContent,
+      difficulty: currentStar,
+      song: currentBeatmap ? currentBeatmap.title : "",
+      date: new Date().toISOString(),
+    };
+
+    try {
+      const response = await fetch("http://localhost:3000/scores", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newScore),
+      });
+      if (!response.ok) throw new Error("Submit failed");
+
+      // Success
+      document.getElementById("score-submission").style.display = "none";
+      document.querySelector(".result").style.display = "flex";
+      document.querySelector(".result-breakdown").style.display = "flex";
+      document.getElementById("btns").style.display = "flex";
+      const successMsg = document.getElementById("submit-success");
+      successMsg.textContent = "Score submitted!";
+      successMsg.style.display = "inline";
+      // setTimeout(() => { document.getElementById("btn-submit-score").style.backgroundColor = 'grey'; }, 3000)
+    } catch (error) {
+      submitError.textContent = "Failed to submit score. Try again.";
+      submitError.style.color = "#ff4444";
+    }
+  });
+// ------ Result Submit ------

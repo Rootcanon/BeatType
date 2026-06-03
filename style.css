@@ -425,3 +425,71 @@ main {
     font-size: 14px;
     margin-top: 24px;
 }
+
+/* ── Score Submission Form ── */
+#score-submission {
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  width: 90%;
+  max-width: 400px;
+}
+
+#score-submission h3 {
+  color: #00d2ff;
+  text-shadow: 0 0 5px rgba(0,210,255,0.3);
+  margin-bottom: 0.5rem;
+}
+
+#score-submission label {
+  font-size: 0.9rem;
+  color: #cccccc;
+}
+
+#score-submission input[type="text"] {
+  background: #1a1a2e;
+  color: #ffffff;
+  border: 1px solid #00d2ff;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+#score-submission .form-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+#score-submission button {
+  background: transparent;
+  background-color: #14142399;
+  border: 2px solid #333;
+  color: #ffffff;
+  padding: 0.3rem 1rem;
+  border-radius: 18px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.3s;
+}
+
+#score-submission button:hover {
+  background: #00d2ff;
+  color: #050510;
+}
+
+/* Error / success feedback messages */
+.error-message {
+  display: block;
+  font-size: 0.85rem;
+  min-height: 1.2em;
+}
+
+#name-error {
+  color: #ff6666;
+}
+
+#submit-error {
+  margin-top: 0.5rem;
+  color: #ff6666;
+}

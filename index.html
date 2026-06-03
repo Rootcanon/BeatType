@@ -7,6 +7,7 @@
     <title>Document</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <header>
         <nav id="main-nav">
@@ -131,10 +132,25 @@
                 <div id="btns">
                     <button class="btn" id="btn-restart">Play Again</button>
                     <button class="btn" id="btn-menu">Back to Menu</button>
+                    <button class="btn" id="btn-submit-score">Submit Score</button>
+                    <span id="submit-success" style="display:none; color: lime; margin-left: 1rem;"></span>
+                </div>
+
+                <div id="score-submission" hidden onsubmit="return false">
+                    <h3>Submit Your Score</h3>
+                    <label for="player-name">Your Name</label>
+                    <input type="text" id="player-name" minlength="2" required>
+                    <span class="error-message" id="name-error"></span>
+                    <div class="form-buttons">
+                        <button type="button" id="submit-name-btn">Submit</button>
+                        <button type="button" id="cancel-submit-btn">Cancel</button>
+                    </div>
+                    <span class="error-message" id="submit-error"></span>
                 </div>
             </div>
         </section>
     </main>
+
     <audio id="game-audio" src="" preload="auto"></audio>
     <script src="app.js"></script>
 </body>
