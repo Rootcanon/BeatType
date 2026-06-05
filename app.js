@@ -98,8 +98,19 @@ document.getElementById("btn-submit-score").addEventListener("click", () => {
   // Show form
   const form = document.getElementById("score-submission");
   form.style.display = "flex";
-  form.hidden = false; // in case the hidden attribute is still present
+  form.hidden = false;
   document.getElementById("player-name").value = "";
+
+  document.getElementById("submitted-score").value = gameState.score;
+  document.getElementById("submitted-combo").value = gameState.maxCombo;
+  document.getElementById("submitted-accuracy").value =
+    document.getElementById("final-accuracy").textContent;
+  document.getElementById("submitted-difficulty").value = currentStar;
+  document.getElementById("submitted-song").value = currentBeatmap
+    ? currentBeatmap.title
+    : "";
+  document.getElementById("submitted-date").value = new Date().toISOString();
+
   document.getElementById("name-error").textContent = "";
   document.getElementById("submit-error").textContent = "";
 });
