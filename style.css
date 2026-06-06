@@ -29,6 +29,10 @@
     transition: background 0.5s, color 0.5s;
 }
 
+#main-nav:hover{
+    box-shadow: 0 0 20px rgba(86, 68, 192, 0.6);
+}
+
 #main-nav button:hover {
     background: #00d2ff;
     color: #050510;
@@ -51,6 +55,21 @@
     margin-bottom: 2rem;
 }
 
+#stats{
+    padding: 1rem;
+    border-radius: 15px;
+    border: 2px solid rgba(36, 36, 72, 0.6);
+    box-shadow: 2px 0px 15px rgb(64, 147, 224, 0.5);
+    min-height: 8rem;
+    max-height: 15rem;
+    width: 47%;
+}
+
+#stats:hover{
+    border: 2px solid rgba(64, 147, 244, 0.6);
+    box-shadow: 2px 0px 20px rgb(64, 147, 224, 0.75);
+}
+
 #stats span {
     margin-right: 1.5rem;
     font-family: 'Courier New', monospace;
@@ -62,8 +81,17 @@
     color: snow;
     padding: 1rem;
     border-radius: 15px;
-    border: 1px solid rgba(64, 147, 244, 0.6);
-    box-shadow: 2px 0px 4px rgb(64, 147, 224, 0.5);
+    border: 2px solid rgba(36, 36, 72, 0.6);
+    box-shadow: 2px 0px 15px rgb(64, 147, 224, 0.5);
+    min-height: 8rem;
+    max-height: 15rem;
+    width: 47%;
+    overflow-y: auto;
+}
+
+.recent-plays:hover{
+    border: 2px solid rgba(64, 147, 244, 0.6);
+    box-shadow: 2px 0px 20px rgb(64, 147, 224, 0.75);
 }
 
 .recent-plays h3 {
@@ -71,7 +99,14 @@
     margin-bottom: 1rem;
 }
 
-/* .recent-plays-cards {} */
+#recent-plays-cards {
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  color: #cccccc;
+  margin: 0.2rem 0;
+  padding: 0.3rem;
+  border-bottom: 1px solid #333;
+}
 
 /* ── Beatmap Section ── */
 #beatmap-section {
