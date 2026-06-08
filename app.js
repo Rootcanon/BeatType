@@ -4,7 +4,8 @@ const difficultyFilter = document.getElementById("difficulty-filter");
 const audio = document.getElementById("game-audio");
 
 // Global Data
-let allBeatmaps = [];
+const API_URL = "http://localhost:3000";
+let allBeatmapsData = [];
 let currentBeatmap = null;
 let currentStar = 3;
 const difficultyBPM = { 1: 60, 2: 80, 3: 100, 4: 120, 5: 140 };
@@ -37,8 +38,8 @@ const KEY_TO_LANE = {
 
 // Wait for all DOMs to load Event Listner
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("App ready");
   fetchBeatmaps();
+  loadRecentScores();
 });
 
 // Filter Event Listeners
@@ -139,9 +140,9 @@ function showError(message) {
 async function fetchBeatmaps() {
   showLoading();
   try {
-    const response = await fetch("http://localhost:3000/beatmaps");
+    const response = await fetch(API_URL + "/beatmaps");
     if (!response.ok) throw new Error("Server Error");
-    allBeatmaps = await response.json();
+    allBeatmapsData = await response.json();
     applyFilter();
   } catch (error) {
     showError("Failed to load beatmaps.");
@@ -152,17 +153,17 @@ async function fetchBeatmaps() {
 function applyFilter() {
   let selected = difficultyFilter.value;
   let filtered;
-  if (selected === "all") filtered = allBeatmaps;
+  if (selected === "all") filtered = allBeatmapsData;
   else {
     let star = parseInt(selected);
-    filtered = allBeatmaps.filter((beatmap) =>
+    filtered = allBeatmapsData.filter((beatmap) =>
       beatmap.difficulties.includes(star),
     );
   }
   renderBeatmaps(filtered);
 }
 
-// Render Cards (Create & Render)
+// Render Beatmap Cards (Create & Render)
 function renderBeatmaps(cardData) {
   beatmapCardsContainer.innerHTML = "";
 
@@ -177,17 +178,16 @@ function renderBeatmaps(cardData) {
     controls.className = "card-controls";
 
     const select = document.createElement("select");
-    for (let i = 1; i <= 5; i++) {
+    element.difficulties.forEach((star) => {
       const option = document.createElement("option");
-      option.value = i;
-      option.textContent = "★".repeat(i) + "☆".repeat(5 - i);
+      option.value = star;
+      option.textContent = "★".repeat(star) + "☆".repeat(5 - star);
       select.appendChild(option);
-    }
+    });
 
     const playBtn = document.createElement("button");
     playBtn.textContent = "Play";
     playBtn.addEventListener("click", () => {
-      console.log("Play:", element.title, "Difficulty:", select.value);
       startGame(element, parseInt(select.value));
     });
 
@@ -200,6 +200,68 @@ function renderBeatmaps(cardData) {
   });
 }
 // ------ Beatmap fetching & rendering functions ------
+
+// ------ RecentPlay fetching & rendering functions ------
+// Load recent-scores
+async function loadRecentScores() {
+  try {
+    const response = await fetch(API_URL + "/scores");
+    if (!response.ok) throw new Error("Failed to fetch scores");
+    const scores = await response.json();
+    renderRecentScores(scores);
+  } catch (error) {
+    let recentPlays = document.getElementById("recent-plays-cards");
+    recentPlays.textContent = "Could not load recent scores";
+  }
+}
+// Render RecentPlays Cards (Create & Render)
+function renderRecentScores(scoresData) {
+  let recentPlays = document.getElementById("recent-plays-cards");
+  recentPlays.innerHTML = "";
+
+  scoresData.forEach((element) => {
+    const card = document.createElement("div");
+    card.className = "recentplay-card";
+
+    const title = document.createElement("span");
+    title.className = "recentplay-title";
+
+    const grade = document.createElement("h4");
+    grade.textContent = element.grade;
+    const score = document.createElement("h4");
+    score.textContent = "Score: " + element.score;
+
+    title.appendChild(grade);
+    title.appendChild(score);
+
+    const maxCombo = document.createElement("p");
+    maxCombo.textContent = "Combo: " + element.maxCombo;
+    const accuracy = document.createElement("p");
+    accuracy.textContent = "Accuracy: " + element.accuracy;
+    const song = document.createElement("p");
+    song.textContent = "Song: " + element.song;
+    const difficulty = document.createElement("p");
+    difficulty.textContent =
+      "Difficulty: " +
+      "★".repeat(element.difficulty) +
+      "☆".repeat(5 - element.difficulty);
+
+    const showResult = document.createElement("button");
+    showResult.textContent = "Result";
+    // showResult.addEventListener("click", () => {
+    //   showResult(element, parseInt(select.value));
+    // });
+
+    card.appendChild(title);
+    card.appendChild(maxCombo);
+    card.appendChild(accuracy);
+    card.appendChild(song);
+    card.appendChild(difficulty);
+
+    recentPlays.appendChild(card);
+  });
+}
+// ------ RecentPlay fetching & rendering functions ------
 
 // ------ Game start & state functions ------
 // Game start
@@ -262,7 +324,7 @@ function getFallDuration(difficulty) {
 // ------ Game loop & mechanics ------
 function findClosestNote(laneId, currentTime) {
   let closestNote = null; // Note object
-  let closestDelta = Infinity; // Least distance to bottem
+  let closestDelta = Infinity; // Least distance to bottom
   let offset = gameState.offset;
   gameState.activeNotes.forEach((note) => {
     if (note.laneId === laneId) {
@@ -548,7 +610,7 @@ document
     };
 
     try {
-      const response = await fetch("http://localhost:3000/scores", {
+      const response = await fetch(API_URL + "/scores", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newScore),
@@ -563,7 +625,7 @@ document
       const successMsg = document.getElementById("submit-success");
       successMsg.textContent = "Score submitted!";
       successMsg.style.display = "inline";
-      // setTimeout(() => { document.getElementById("btn-submit-score").style.backgroundColor = 'grey'; }, 3000)
+       loadRecentScores();
     } catch (error) {
       submitError.textContent = "Failed to submit score. Try again.";
       submitError.style.color = "#ff4444";
