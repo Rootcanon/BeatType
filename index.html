@@ -35,15 +35,25 @@
             <div id="beatmap-section">
                 <h2>Select a Beatmap</h2>
                 <div id="filter">
-                    <label for="difficulty-filter">Difficulty:</label>
-                    <select id="difficulty-filter">
-                        <option value="all">All</option>
-                        <option value="1">★☆☆☆☆</option>
-                        <option value="2">★★☆☆☆</option>
-                        <option value="3">★★★☆☆</option>
-                        <option value="4">★★★★☆</option>
-                        <option value="5">★★★★★</option>
-                    </select>
+                    <div class="filter-group">
+                        <label for="difficulty-filter">Difficulty:</label>
+                        <select id="difficulty-filter">
+                            <option value="all">All</option>
+                            <option value="1">★☆☆☆☆</option>
+                            <option value="2">★★☆☆☆</option>
+                            <option value="3">★★★☆☆</option>
+                            <option value="4">★★★★☆</option>
+                            <option value="5">★★★★★</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="sort-filter">Sort:</label>
+                        <select id="sort-filter">
+                            <option value="none">Default</option>
+                            <option value="name-asc">Name A-Z</option>
+                            <option value="name-desc">Name Z-A</option>
+                        </select>
+                    </div>
                 </div>
                 <hr>
                 <div id="beatmap-cards"></div>
@@ -140,7 +150,7 @@
                     <h3>Submit Your Score</h3>
                     <label for="player-name">Your Name</label>
                     <input type="text" id="player-name" minlength="2" required>
-                    
+
                     <input type="hidden" id="submitted-score">
                     <input type="hidden" id="submitted-combo">
                     <input type="hidden" id="submitted-accuracy">

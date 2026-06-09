@@ -1,6 +1,7 @@
 // DOM Refrence Variables
 const beatmapCardsContainer = document.getElementById("beatmap-cards");
 const difficultyFilter = document.getElementById("difficulty-filter");
+const sortFilter = document.getElementById("sort-filter");
 const audio = document.getElementById("game-audio");
 
 // Global Data
@@ -42,8 +43,11 @@ document.addEventListener("DOMContentLoaded", () => {
   loadRecentScores();
 });
 
-// Filter Event Listeners
-difficultyFilter.addEventListener("change", applyFilter);
+// Filter Event Listener
+difficultyFilter.addEventListener("change", applyFilters);
+
+// Sort Event Listener
+sortFilter.addEventListener("change", applyFilters);
 
 // Audio Event Listner
 audio.addEventListener("canplaythrough", function () {
@@ -61,7 +65,11 @@ window.addEventListener("keydown", function (e) {
       e.preventDefault();
       handleKeyPress(laneID);
     }
-  } else if (e.code === "Space" && !gameState.isPlaying) {
+  } else if (
+    e.code === "Space" &&
+    !gameState.isPlaying &&
+    document.getElementById("start-message").style.display === "flex"
+  ) {
     e.preventDefault();
     document.getElementById("start-message").style.display = "none";
     gameState.isPlaying = true;
@@ -143,14 +151,14 @@ async function fetchBeatmaps() {
     const response = await fetch(API_URL + "/beatmaps");
     if (!response.ok) throw new Error("Server Error");
     allBeatmapsData = await response.json();
-    applyFilter();
+    applyFilters();
   } catch (error) {
     showError("Failed to load beatmaps.");
   }
 }
 
 // Filter for Beatmap Cards
-function applyFilter() {
+function applyFilters() {
   let selected = difficultyFilter.value;
   let filtered;
   if (selected === "all") filtered = allBeatmapsData;
@@ -159,6 +167,11 @@ function applyFilter() {
     filtered = allBeatmapsData.filter((beatmap) =>
       beatmap.difficulties.includes(star),
     );
+  }
+  if (sortFilter.value === "name-asc") {
+    filtered.sort((a, b) => a.title.localeCompare(b.title));
+  } else if (sortFilter.value === "name-desc") {
+    filtered.sort((a, b) => b.title.localeCompare(a.title));
   }
   renderBeatmaps(filtered);
 }
@@ -625,7 +638,7 @@ document
       const successMsg = document.getElementById("submit-success");
       successMsg.textContent = "Score submitted!";
       successMsg.style.display = "inline";
-       loadRecentScores();
+      loadRecentScores();
     } catch (error) {
       submitError.textContent = "Failed to submit score. Try again.";
       submitError.style.color = "#ff4444";

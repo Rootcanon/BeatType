@@ -124,6 +124,9 @@
 
 #filter {
     margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
 }
 
 #filter label {
