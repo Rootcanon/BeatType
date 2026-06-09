@@ -55,6 +55,21 @@
     margin-bottom: 2rem;
 }
 
+#username-input {
+  background: transparent;
+  border: none;
+  /* border-bottom: 1px solid rgba(0, 210, 255, 0.3); */
+  color: cyan;
+  font-family: 'Courier New', monospace;
+  font-size: 1.2rem;
+  width: 120px;
+  outline: none;
+}
+
+#username-input::placeholder {
+  color: rgba(0, 210, 255, 0.4);
+}
+
 #stats{
     padding: 1rem;
     border-radius: 15px;

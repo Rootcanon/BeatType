@@ -2,6 +2,7 @@
 const beatmapCardsContainer = document.getElementById("beatmap-cards");
 const difficultyFilter = document.getElementById("difficulty-filter");
 const sortFilter = document.getElementById("sort-filter");
+const usernameInput = document.getElementById("username-input");
 const audio = document.getElementById("game-audio");
 
 // Global Data
@@ -9,6 +10,7 @@ const API_URL = "http://localhost:3000";
 let allBeatmapsData = [];
 let currentBeatmap = null;
 let currentStar = 3;
+let currentUsername = ""; // empty = show all players
 const difficultyBPM = { 1: 60, 2: 80, 3: 100, 4: 120, 5: 140 };
 let gameState = {
   isPlaying: false,
@@ -135,6 +137,12 @@ document.getElementById("cancel-submit-btn").addEventListener("click", () => {
   document.getElementById("btns").style.display = "flex";
 });
 
+// Input Username Event Listner
+usernameInput.addEventListener("change", () => {
+  currentUsername = usernameInput.value.trim();
+  loadRecentScores();
+});
+
 // ------ Beatmap fetching & rendering functions ------
 // Loading and Error for Beatmap cards
 function showLoading() {
@@ -217,11 +225,19 @@ function renderBeatmaps(cardData) {
 // ------ RecentPlay fetching & rendering functions ------
 // Load recent-scores
 async function loadRecentScores() {
+  let url = API_URL + "/scores";
   try {
-    const response = await fetch(API_URL + "/scores");
+    const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to fetch scores");
     const scores = await response.json();
-    renderRecentScores(scores);
+
+    let filtered = scores;
+    if (currentUsername) {
+      filtered = scores.filter((s) => s.player === currentUsername);
+    }
+
+    updateUserStats(filtered);
+    renderRecentScores(filtered);
   } catch (error) {
     let recentPlays = document.getElementById("recent-plays-cards");
     recentPlays.textContent = "Could not load recent scores";
@@ -403,6 +419,7 @@ function judgeNote(note, currentTime) {
   updateHUD();
 }
 
+// Update Game Stats
 function updateHUD() {
   document.getElementById("score").textContent = gameState.score;
   document.getElementById("combo").textContent = gameState.combo;
@@ -418,6 +435,28 @@ function updateHUD() {
       ? Math.round((gameState.totalPointsEarned / (totalHits * 300)) * 100)
       : 100;
   document.getElementById("accuracy").textContent = accuracy + "%";
+}
+
+// Update User Stats
+function updateUserStats(scores) {
+  if (!scores || scores.length === 0) {
+    document.getElementById("user-score").textContent = "0";
+    document.getElementById("user-accuracy").textContent = "0.00%";
+    return;
+  }
+
+  // Total score
+  const totalScore = scores.reduce((sum, s) => sum + s.score, 0);
+
+  // Average accuracy – parseFloat removes the '%'
+  const avgAccuracy =
+    scores.reduce((sum, s) => {
+      return sum + parseFloat(s.accuracy);
+    }, 0) / scores.length;
+
+  document.getElementById("user-score").textContent = totalScore;
+  document.getElementById("user-accuracy").textContent =
+    avgAccuracy.toFixed(2) + "%";
 }
 
 // Game loop logic - Run till audio ends.
@@ -603,6 +642,11 @@ document
     const nameInput = document.getElementById("player-name");
     const nameError = document.getElementById("name-error");
     const submitError = document.getElementById("submit-error");
+
+    if (!usernameInput.value.trim()) {
+      usernameInput.value = nameInput.value.trim();
+      currentUsername = nameInput.value.trim();
+    }
 
     // Validate
     if (nameInput.value.trim().length < 2) {
