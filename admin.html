@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BeatType - Admin</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header>
+        <nav id="admin-nav">
+            <span id="admin-label">⚙️ Admin Panel</span>
+            <a href="index.html" class="btn">← Back to User Panel</a>
+        </nav>
+    </header>
+
+    <main>
+        <section id="admin-stats">
+            <h2>Dashboard</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3 id="stat-total">0</h3>
+                    <p>Total Beatmaps</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="stat-avg-diff">0</h3>
+                    <p>Avg Difficulties / Song</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="stat-most-common">N/A</h3>
+                    <p>Most Common Difficulty</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="admin-beatmaps">
+            <h2>Manage Beatmaps</h2>
+            <table id="beatmap-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Difficulties</th>
+                        <th>File Path</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="beatmap-table-body"></tbody>
+            </table>
+        </section>
+
+        <section id="admin-form-section">
+            <h2 id="form-title">Add New Beatmap</h2>
+            <form id="beatmap-form">
+                <label for="beatmap-id">ID</label>
+                <input type="number" id="beatmap-id" required>
+
+                <label for="beatmap-title">Title</label>
+                <input type="text" id="beatmap-title" required>
+
+                <label for="beatmap-difficulties">Difficulties (comma‑separated)</label>
+                <input type="text" id="beatmap-difficulties" placeholder="1,2,3" required>
+
+                <label for="beatmap-filepath">File Path</label>
+                <input type="text" id="beatmap-filepath" required>
+
+                <div class="form-buttons">
+                    <button type="submit" id="save-btn">Add Beatmap</button>
+                    <button type="button" id="cancel-edit-btn" style="display:none;">Cancel</button>
+                </div>
+                <span class="error-message" id="form-error"></span>
+            </form>
+        </section>
+    </main>
+
+</body>
+
+</html>

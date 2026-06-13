@@ -132,7 +132,7 @@
 }
 
 .recentplay-card:hover {
-  background: rgba(0, 210, 255, 0.05);
+    background: rgba(0, 210, 255, 0.05);
 }
 
 /* ── Beatmap Section ── */
@@ -178,9 +178,9 @@
 
 
 .filter-group {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
 }
 
 hr {
@@ -580,4 +580,219 @@ main {
 #submit-error {
     margin-top: 0.5rem;
     color: #ff6666;
+}
+
+
+/* ── Admin Panel ── */
+#admin-nav {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    padding: 1rem 1.2rem;
+    background: rgba(10, 10, 20, 0.8);
+    border: 2px solid #00d2ff;
+    border-radius: 2rem;
+    box-shadow: 0 0 15px rgba(0, 210, 255, 0.3);
+    margin-bottom: 2rem;
+    margin-top: 1.2rem;
+}
+
+#admin-label {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #00d2ff;
+    text-shadow: 0 0 8px rgba(0, 210, 255, 0.5);
+}
+
+#admin-nav .btn {
+    background: transparent;
+    border: 1px solid #00d2ff;
+    color: #00d2ff;
+    padding: 0.4rem 1rem;
+    border-radius: 18px;
+    font-size: 0.9rem;
+    transition: background 0.3s, color 0.3s;
+}
+
+#admin-nav .btn:hover {
+    background: #00d2ff;
+    color: #050510;
+}
+
+/* Stats Dashboard */
+#admin-stats {
+    width: 90%;
+    max-width: 1000px;
+    margin: 0 auto 2rem;
+}
+
+#admin-stats h2 {
+    color: #00d2ff;
+    font-size: 1.75rem;
+    margin-bottom: 1rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+}
+
+.stat-card {
+    background: rgba(20, 20, 35, 0.8);
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    transition: border-color 0.3s;
+}
+
+.stat-card:hover {
+    border-color: #00d2ff;
+}
+
+.stat-card h3 {
+    font-size: 2rem;
+    color: #00d2ff;
+    font-family: 'Courier New', monospace;
+}
+
+.stat-card p {
+    color: #aaa;
+    font-size: 0.9rem;
+    margin-top: 0.3rem;
+}
+
+/* Beatmap Table */
+#admin-beatmaps {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto 2rem;
+}
+
+#admin-beatmaps h2 {
+    color: #00d2ff;
+    font-size: 1.75rem;
+    margin-bottom: 1rem;
+}
+
+#beatmap-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(20, 20, 35, 0.6);
+}
+
+#beatmap-table th,
+#beatmap-table td {
+    padding: 0.8rem;
+    border: 1px solid #333;
+    text-align: left;
+}
+
+#beatmap-table th {
+    background: rgba(0, 210, 255, 0.1);
+    color: #00d2ff;
+    font-weight: bold;
+}
+
+#beatmap-table tr:hover {
+    background: rgba(0, 210, 255, 0.05);
+}
+
+.edit-btn,
+.delete-btn {
+    background: transparent;
+    border: 1px solid #00d2ff;
+    color: #00d2ff;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 0.3rem;
+    font-size: 0.8rem;
+    transition: background 0.3s, color 0.3s;
+}
+
+.edit-btn:hover {
+    background: #00d2ff;
+    color: #050510;
+}
+
+.delete-btn {
+    border-color: #ff4444;
+    color: #ff4444;
+}
+
+.delete-btn:hover {
+    background: #ff4444;
+    color: #050510;
+}
+
+/* Admin Form */
+#admin-form-section {
+    width: 90%;
+    max-width: 600px;
+    margin: 0 auto 2rem;
+}
+
+#admin-form-section h2 {
+    color: #00d2ff;
+    font-size: 1.75rem;
+    margin-bottom: 1rem;
+}
+
+#beatmap-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+#beatmap-form label {
+    color: #cccccc;
+    font-size: 0.9rem;
+}
+
+#beatmap-form input {
+    background: #1a1a2e;
+    color: white;
+    border: 1px solid #00d2ff;
+    padding: 0.5rem;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+#beatmap-form .form-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+#save-btn,
+#cancel-edit-btn {
+    background: #00d2ff;
+    color: #050510;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+#save-btn:hover {
+    background: #00a8cc;
+}
+
+#cancel-edit-btn {
+    background: #444;
+    color: white;
+}
+
+#cancel-edit-btn:hover {
+    background: #666;
+}
+
+#form-error {
+    color: #ff4444;
+    font-size: 0.85rem;
 }
