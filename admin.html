@@ -11,13 +11,17 @@
 <body>
     <header>
         <nav id="admin-nav">
-            <span id="admin-label">⚙️ Admin Panel</span>
+            <div class="admin-nav-buttons">
+                <button class="btn" id="btn-dashboard">Dashboard</button>
+                <button class="btn" id="btn-beatmaps">Manage Beatmaps</button>
+                <button class="btn" id="btn-add">Add Beatmap</button>
+            </div>
             <a href="index.html" class="btn">← Back to User Panel</a>
         </nav>
     </header>
 
     <main>
-        <section id="admin-stats">
+        <section id="admin-stats" style="display:block;">
             <h2>Dashboard</h2>
             <div class="stats-grid">
                 <div class="stat-card">
@@ -35,7 +39,7 @@
             </div>
         </section>
 
-        <section id="admin-beatmaps">
+        <section id="admin-beatmaps" style="display:none;">
             <h2>Manage Beatmaps</h2>
             <table id="beatmap-table">
                 <thead>
@@ -51,7 +55,7 @@
             </table>
         </section>
 
-        <section id="admin-form-section">
+        <section id="admin-form-section" style="display:none;">
             <h2 id="form-title">Add New Beatmap</h2>
             <form id="beatmap-form">
                 <label for="beatmap-id">ID</label>
@@ -74,7 +78,7 @@
             </form>
         </section>
     </main>
-
+    <script src="admin.js"></script>
 </body>
 
 </html>
