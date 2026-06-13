@@ -1,4 +1,4 @@
-// DOM Refrence Variables
+// DOM Reference Variables
 const beatmapCardsContainer = document.getElementById("beatmap-cards");
 const difficultyFilter = document.getElementById("difficulty-filter");
 const sortFilter = document.getElementById("sort-filter");
@@ -92,7 +92,7 @@ document.getElementById("btn-restart").addEventListener("click", function () {
   }
 });
 
-// Prevent form submition
+// Prevent form submission
 document
   .getElementById("score-submission")
   .addEventListener("submit", function (e) {
@@ -109,7 +109,6 @@ document.getElementById("btn-submit-score").addEventListener("click", () => {
   // Show form
   const form = document.getElementById("score-submission");
   form.style.display = "flex";
-  form.hidden = false;
   document.getElementById("player-name").value = "";
 
   document.getElementById("submitted-score").value = gameState.score;
