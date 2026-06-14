@@ -274,12 +274,6 @@ function renderRecentScores(scoresData) {
       "★".repeat(element.difficulty) +
       "☆".repeat(5 - element.difficulty);
 
-    const showResult = document.createElement("button");
-    showResult.textContent = "Result";
-    // showResult.addEventListener("click", () => {
-    //   showResult(element, parseInt(select.value));
-    // });
-
     card.appendChild(title);
     card.appendChild(maxCombo);
     card.appendChild(accuracy);

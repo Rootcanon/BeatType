@@ -35,6 +35,12 @@
       "title": "Binks no Sake",
       "difficulties": [1, 2],
       "filePath": "./assets/songs/Binks no Sake.webm"
+    },
+    {
+      "id": 7,
+      "title": "Test_1",
+      "difficulties": [1, 3, 5],
+      "filePath": "./assets/songs/Livin' Up (Sting) - Otis McDonald.webm"
     }
   ],
   "scores": []
