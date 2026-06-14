@@ -40,8 +40,10 @@
         </section>
 
         <section id="admin-beatmaps" class="admin-section" style="display:none;">
-            <h2>Manage Beatmaps</h2>
-            <button id="export-csv-btn" class="btn" style="margin-bottom:1rem;">Export CSV</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>Manage Beatmaps</h2>
+                <button id="export-csv-btn" class="btn admin-export-btn">Export CSV</button>
+            </div>
             <table id="beatmap-table">
                 <thead>
                     <tr>
@@ -58,18 +60,15 @@
 
         <section id="admin-form-section" class="admin-section" style="display:none;">
             <h2 id="form-title">Add New Beatmap</h2>
-            <form id="beatmap-form">
-                <label for="beatmap-id">ID</label>
-                <input type="number" id="beatmap-id" required>
-
+            <form id="beatmap-form" novalidate>
                 <label for="beatmap-title">Title</label>
-                <input type="text" id="beatmap-title" required>
+                <input type="text" id="beatmap-title">
 
                 <label for="beatmap-difficulties">Difficulties (comma‑separated)</label>
-                <input type="text" id="beatmap-difficulties" placeholder="1,2,3" required>
+                <input type="text" id="beatmap-difficulties" placeholder="1,2,3">
 
                 <label for="beatmap-filepath">File Path</label>
-                <input type="text" id="beatmap-filepath" required>
+                <input type="text" id="beatmap-filepath">
 
                 <div class="form-buttons">
                     <button type="submit" id="save-btn">Add Beatmap</button>

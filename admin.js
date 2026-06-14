@@ -1,7 +1,6 @@
 // DOM Reference Variables
 const tableBody = document.getElementById("beatmap-table-body");
 const form = document.getElementById("beatmap-form");
-const beatmapIdInput = document.getElementById("beatmap-id");
 const beatmapTitleInput = document.getElementById("beatmap-title");
 const beatmapDifficultiesInput = document.getElementById(
   "beatmap-difficulties",
@@ -21,6 +20,7 @@ const exportCsvBtn = document.getElementById("export-csv-btn");
 const API_URL = "http://localhost:3000";
 let isEditing = false; // track whether we are adding or editing
 let editingBeatmapId = null; // store the id of the beatmap being edited
+let currentBeatmaps = []; // To determine id no.
 
 //  1. Fetch & Display Beatmaps
 async function fetchAdminBeatmaps() {
@@ -28,6 +28,7 @@ async function fetchAdminBeatmaps() {
     const response = await fetch(API_URL + "/beatmaps");
     if (!response.ok) throw new Error("Server Error");
     const beatmaps = await response.json();
+    currentBeatmaps = beatmaps;
     renderAdminTable(beatmaps);
     updateAdminStats(beatmaps); // we'll write this later
   } catch (error) {
@@ -47,8 +48,8 @@ function renderAdminTable(beatmaps) {
       <td>${beatmap.difficulties.join(", ")}</td>
       <td>${beatmap.filePath}</td>
       <td>
-        <button class="edit-btn" data-id="${beatmap.id}">Edit</button>
-        <button class="delete-btn" data-id="${beatmap.id}">Delete</button>
+        <button type="button" class="edit-btn" data-id="${beatmap.id}">Edit</button>
+        <button type="button" class="delete-btn" data-id="${beatmap.id}">Delete</button>
       </td>
     `;
     tableBody.appendChild(tr);
@@ -109,9 +110,8 @@ btnAdd.addEventListener("click", () => showSection("admin-form-section"));
 // Set initial active button
 btnDashboard.classList.add("active");
 
-//  4. Form Handling (Add / Edit) - will be added next
-// -- ADD
 //  4. Form Handling (Add / Edit)
+// -- ADD
 form.addEventListener("submit", function (e) {
   e.preventDefault();
   handleSubmit();
@@ -130,13 +130,12 @@ async function handleSubmit() {
   }
 
   const beatmapData = {
-    id: parseInt(beatmapIdInput.value),
     title: beatmapTitleInput.value.trim(),
     difficulties: diffs,
     filePath: beatmapFilepathInput.value.trim(),
   };
 
-  if (!beatmapData.id || !beatmapData.title || !beatmapData.filePath) {
+  if (!beatmapData.title || !beatmapData.filePath) {
     formError.textContent = "All fields are required.";
     formError.style.color = "#ff4444";
     return;

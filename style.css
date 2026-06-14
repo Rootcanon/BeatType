@@ -815,7 +815,22 @@ main {
   transition: background 0.3s, color 0.3s;
 }
 
-.admin-nav-buttons .btn.active {
+#admin-nav .admin-nav-buttons .btn.active {
+  background: #00d2ff;
+  color: #050510;
+}
+
+.admin-export-btn {
+  background: transparent;
+  border: 1px solid #00d2ff;
+  color: #00d2ff;
+  padding: 0.4rem 1rem;
+  border-radius: 18px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.3s, color 0.3s;
+}
+.admin-export-btn:hover {
   background: #00d2ff;
   color: #050510;
 }
