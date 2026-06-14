@@ -29,6 +29,11 @@
     transition: background 0.5s, color 0.5s;
 }
 
+#main-nav .btn.active {
+  background: #00d2ff;
+  color: #050510;
+}
+
 #main-nav:hover {
     box-shadow: 0 0 20px rgba(86, 68, 192, 0.6);
 }

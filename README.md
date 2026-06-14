@@ -38,7 +38,6 @@ Data is stored in db.json and served by JSON Server.
 
 ## Future Improvements
 
-- Make navigation bar buttons functional
 - Fix score submission button to return to result screen after submit
 - Keep admin panel on “Manage Beatmaps” after add/edit/delete
 - Add pre‑designed beatmap patterns (instead of random generation)

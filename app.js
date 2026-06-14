@@ -4,6 +4,11 @@ const difficultyFilter = document.getElementById("difficulty-filter");
 const sortFilter = document.getElementById("sort-filter");
 const usernameInput = document.getElementById("username-input");
 const audio = document.getElementById("game-audio");
+const btnMain = document.getElementById("nav-main");
+const btnBeatmaps = document.getElementById("nav-beatmaps");
+const btnPerformance = document.getElementById("nav-performance");
+const userInfo = document.getElementById("user-info");
+const beatmapSection = document.getElementById("beatmap-section");
 
 // Global Data
 const API_URL = "http://localhost:3000";
@@ -38,6 +43,34 @@ const KEY_TO_LANE = {
   Semicolon: "lane_7",
   KeyA: "lane_8",
 };
+
+// ------ Navigation ------
+// Navigation section toggling
+function setActiveNav(activeBtn) {
+  [btnMain, btnBeatmaps, btnPerformance].forEach(b => b.classList.remove("active"));
+  activeBtn.classList.add("active");
+}
+
+btnMain.addEventListener("click", () => {
+  setActiveNav(btnMain);
+  userInfo.style.display = "flex";
+  beatmapSection.style.display = "block";
+});
+
+btnBeatmaps.addEventListener("click", () => {
+  setActiveNav(btnBeatmaps);
+  userInfo.style.display = "none";
+  beatmapSection.style.display = "block";
+});
+
+btnPerformance.addEventListener("click", () => {
+  setActiveNav(btnPerformance);
+  userInfo.style.display = "flex";
+  beatmapSection.style.display = "none";
+});
+
+btnMain.classList.add("active"); // Set Main by default
+// ------ Navigation ------
 
 // Wait for all DOMs to load Event Listner
 document.addEventListener("DOMContentLoaded", () => {
