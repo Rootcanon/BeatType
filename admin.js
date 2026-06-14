@@ -176,11 +176,11 @@ async function handleSubmit() {
 // Table body Event listner
 tableBody.addEventListener("click", (e) => {
   if (e.target.classList.contains("edit-btn")) {
-    const id = parseInt(e.target.getAttribute("data-id"));
+    const id = e.target.getAttribute("data-id");
     editBeatmap(id);
   }
   if (e.target.classList.contains("delete-btn")) {
-    const id = parseInt(e.target.getAttribute("data-id"));
+    const id = e.target.getAttribute("data-id");
     if (confirm("Are you sure you want to delete this beatmap?")) {
       deleteBeatmap(id);
     }
@@ -193,7 +193,6 @@ async function editBeatmap(id) {
     if (!response.ok) throw new Error("Beatmap not found");
     const beatmap = await response.json();
 
-    beatmapIdInput.value = beatmap.id;
     beatmapTitleInput.value = beatmap.title;
     beatmapDifficultiesInput.value = beatmap.difficulties.join(",");
     beatmapFilepathInput.value = beatmap.filePath;
